@@ -35,6 +35,10 @@ logmel_extractor = LogmelFilterBank(sr=sample_rate, n_fft=window_size,
             freeze_parameters=True)
 
 x = logmel_extractor(x)
+
+x.numpy().tofile('image_%dx64', x.shape[0])
+
+
 #need just to extract the x value, dim : torch.Size([1, 1, lenght_audio , 64 (the only dimension that matter which is the spectrogram)])
 #x is a tensor maybe you need to convert it in a np.array to be readable by the program 
 # to convert it just use numpy_array = x.numpy()
