@@ -2,6 +2,8 @@ import librosa
 from torchlibrosa.stft import Spectrogram, LogmelFilterBank
 import torch
 from torch import nn
+import numpy as np
+import time
 
 audio_path = "resources/R9_ZSCveAHg_7s.wav"
 sample_rate = 32000
@@ -23,6 +25,7 @@ amin = 1e-10
 top_db = None
 
 
+start_time = time.time()
 t_waveform = torch.from_numpy(waveform)
 spectrogram_extractor = Spectrogram(n_fft=window_size, hop_length=hop_size, 
             win_length=window_size, window=window, center=center, pad_mode=pad_mode, 
@@ -35,8 +38,12 @@ logmel_extractor = LogmelFilterBank(sr=sample_rate, n_fft=window_size,
             freeze_parameters=True)
 
 x = logmel_extractor(x)
+print("\n--- %s seconds conversion from audio to spectrogram ---\r\n" % (time.time() - start_time))
 
-x.numpy().tofile('image_%dx64', x.shape[0])
+x_name=x.numpy()[0][0]
+name_file= 'image_' + str(x_name.shape[0]) + "x64.npy"
+
+np.save(name_file, x.numpy())
 
 
 #need just to extract the x value, dim : torch.Size([1, 1, lenght_audio , 64 (the only dimension that matter which is the spectrogram)])
