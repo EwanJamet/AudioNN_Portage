@@ -51,9 +51,9 @@ def power_conso():
     plt.savefig("/home/brain/Documents/Test/audioset_tagging_cnn/TensorRT/results/Jetson_Power_Consumption.png")
     
     with open("/home/brain/Documents/Test/audioset_tagging_cnn/TensorRT/results/power_conso.csv", 'w', newline='') as f:
-    	writer = csv.writer(f)
-    	writer.writerow(data.keys())
-    	writer.writerows(zip(*data.values()))
+        writer = csv.writer(f)
+        writer.writerow(data.keys())
+        writer.writerows(zip(*data.values()))
     
     
     
@@ -90,9 +90,9 @@ def audio_tagging(output_data):
 	
 	cuda.memcpy_dtoh(output_data, output_buf)
     
-       global thread_stop
-       time.sleep(10)
-       thread_stop=True
+    global thread_stop
+    time.sleep(10)
+    thread_stop=True
 	
 
 
