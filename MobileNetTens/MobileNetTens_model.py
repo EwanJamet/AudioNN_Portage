@@ -3,6 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.onnx
 import numpy as np
+from torchinfo import summary
+from onnxsim import simplify
+import onnx as onnx
+
 
 def init_layer(layer):
     """Initialize a Linear or Convolutional layer. """
@@ -57,19 +61,20 @@ class MobileNetTens(nn.Module):
 
         self.features = nn.Sequential(
             conv_bn(  1,  32, 2), 
-            conv_dw( 32,  64, 1),
-            conv_dw( 64, 128, 2),
-            conv_dw(128, 128, 1),
-            conv_dw(128, 256, 2),
-            conv_dw(256, 256, 1),
-            conv_dw(256, 512, 2),
-            conv_dw(512, 512, 1),
-            conv_dw(512, 512, 1),
-            conv_dw(512, 512, 1),
-            conv_dw(512, 512, 1),
-            conv_dw(512, 512, 1),
-            conv_dw(512, 1024, 2),
-            conv_dw(1024, 1024, 1))
+            # conv_dw( 32,  64, 1),
+            # conv_dw( 64, 128, 2),
+            # conv_dw(128, 128, 1),
+            # conv_dw(128, 256, 2),
+            # conv_dw(256, 256, 1),
+            # conv_dw(256, 512, 2),
+            # conv_dw(512, 512, 1),
+            # conv_dw(512, 512, 1),
+            # conv_dw(512, 512, 1),
+            # conv_dw(512, 512, 1),
+            # conv_dw(512, 512, 1),
+            # conv_dw(512, 1024, 2),
+
+            conv_dw(32, 1024, 1))
 
         self.fc1 = nn.Linear(1024, 1024, bias=True)
         self.fc_audioset = nn.Linear(1024, classes_num, bias=True)
@@ -81,40 +86,53 @@ class MobileNetTens(nn.Module):
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
  
-    def forward(self, input, mixup_lambda=None):
+    def forward(self, input):
         """
         Input: (batch_size, data_length)"""
         x = input
-        x = x.transpose(1, 3)
-        x = self.bn0(x)
-        x = x.transpose(1, 3)
-        
+        # print(x.shape)
+        # x = x.transpose(1, 3)
+        # print(x.shape)
+
+
+        # x = self.bn0(x)
+        # x = x.transpose(1, 3)
+        # print(x.shape)
         x = self.features(x)
-        x = torch.mean(x, dim=3)
+        # print(x.shape)
+        # x = torch.mean(x, dim=3)
+        # print(x.shape)
+        # (x1, _) = torch.max(x, dim=2)
+
+        # x2 = torch.mean(x, dim=2)
+ 
+        # x = x1 + x2
         
-        (x1, _) = torch.max(x, dim=2)
-        x2 = torch.mean(x, dim=2)
-        x = x1 + x2
-        x = F.relu_(self.fc1(x))
-        clipwise_output = torch.sigmoid(self.fc_audioset(x))
+        # print(x.shape)
+        # x = F.relu_(self.fc1(x))
+        # clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output}
+        output_dict = {'clipwise_output': x}
 
         return output_dict
 
 
-def Convert_ONNX():
+
+
+
+def Convert_ONNX(path_model):
 
     # torch_model = MobileNetV1(sample_rate, window_size, hop_size, mel_bins, fmin, fmax, classes_num)
-    res_height = 701 # need to put the good dimensions (need to be fix but i want it to adapt for the right size)
+    res_height = 50 # need to put the good dimensions (need to be fix but i want it to adapt for the right size)
     res_width = 64
-    path_model = "/home/ewan/Documents/Ecole/Procom/audioset_tagging_cnn/MobileNetTens/MobileNetTens_W.onnx"
+    
+    x = torch.randn(1,1,res_height, res_width, device="cpu")
     torch.onnx.export(
                 model,# your pytorch model
-                torch.randn(1,1,res_height, res_width, device="cpu"), # need to change to put the right entrance
+                x, # need to change to put the right entrance
                 path_model, # path to save
                 export_params=True,
-                opset_version=10, # mandatory for tensil
+                opset_version=10, # mandatory for tensil 10 by default
                 input_names = ['Input'],
                 output_names=["Output"],
     )
@@ -138,7 +156,26 @@ for key in key_to_suppress:
 
 key_add_suppress = np.array(["bn0.num_batches_tracked", "features.0.2.num_batches_tracked", "features.1.2.num_batches_tracked", "features.1.5.num_batches_tracked", "features.2.2.num_batches_tracked", "features.2.5.num_batches_tracked", "features.3.2.num_batches_tracked", "features.3.5.num_batches_tracked", "features.4.2.num_batches_tracked", "features.4.5.num_batches_tracked", "features.5.2.num_batches_tracked", "features.5.5.num_batches_tracked", "features.6.2.num_batches_tracked", "features.6.5.num_batches_tracked", "features.7.2.num_batches_tracked", "features.7.5.num_batches_tracked", "features.8.2.num_batches_tracked", "features.8.5.num_batches_tracked", "features.9.2.num_batches_tracked", "features.9.5.num_batches_tracked", "features.10.2.num_batches_tracked", "features.10.5.num_batches_tracked", "features.11.2.num_batches_tracked", "features.11.5.num_batches_tracked", "features.12.2.num_batches_tracked", "features.12.5.num_batches_tracked", "features.13.2.num_batches_tracked", "features.13.5.num_batches_tracked"])
 
-model.load_state_dict(checkpoint['model'])
+# model.load_state_dict(checkpoint['model'])
 
-Convert_ONNX()
+
+# print(list(checkpoint['model'].keys()))
+
+# res_height = 701 # need to put the good dimensions (need to be fix but i want it to adapt for the right size)
+# res_width = 64
+# batch_size = 16
+# summary(model, input_size=(1,1,res_height, res_width))
+path_model = "../audioset_tagging_cnn/MobileNetTens/Weight_NN/MobileNetTens_light.onnx"
+
+Convert_ONNX(path_model)
+
+onnx_model = onnx.load(path_model)
+model_simp, check = simplify(onnx_model)
+onnx.save(model_simp, path_model)
+
+onnx_model = onnx.load(path_model)
+model_simp, check = simplify(onnx_model)
+onnx.save(model_simp, path_model)
+
+
 print("conversion complete")
