@@ -1,0 +1,7 @@
+CHECKPOINT_PATH="Cnn10_mAP=0.380.pth"
+MODEL_TYPE="Cnn10"
+CUDA_VISIBLE_DEVICES=0 python3 pytorch/inference_time.py audio_tagging \
+    --model_type=$MODEL_TYPE \
+    --checkpoint_path=$CHECKPOINT_PATH \
+    --audio_path="resources/R9_ZSCveAHg_7s.wav" \
+    --cuda
