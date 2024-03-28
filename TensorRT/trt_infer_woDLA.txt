@@ -1,0 +1,75 @@
+
+
+# paths to the model and the audio
+ONNX_PATH="../MobileNetTens/Neural_Weight/LeeTens1D.onnxSources/LeeTens1D.onnx"
+ENGINE_PATH_GPU="/home/brain/Documents/Jetson/TensorRT/Sources/LeeTens1D.trt"
+AUDIO_PATH="../Resources/helicopter.npy"
+NB_REP=10000
+CLASSES="MobileNetTens/classes.npy"
+
+# creation of the trt file if necessary :
+
+if [ ! -e "$ENGINE_PATH_GPU" ]; then
+      echo "\033[31mThe file mobileNet_engine.trt does not exist. Conversion in process …\033[0m "
+    /usr/src/tensorrt/bin/trtexec --onnx=$ONNX_PATH --saveEngine=$ENGINE_PATH_GPU
+fi
+
+# Change the power mode
+sudo /usr/sbin/nvpmodel -m 0 # Mode MAXN
+echo -e "\033[32m Running inference on GPU with Mode MAXN :  \033[0m"
+
+# Run the inference
+out_maxn_gpu=$(python3 Scripts/inference_mean_conso.py  \
+    --engine_path=$ENGINE_PATH_GPU \
+    --audio_path=$AUDIO_PATH \
+    --engine=GPU \
+    --nb_rep=$NB_REP \
+    --classes_name=$CLASSES\
+    --power_mode=MAXN)
+    
+result_maxn_gpu=$(echo "$out_maxn_gpu" | grep "* ")  
+printf "$result_maxn_gpu"
+
+printf "\n"
+sudo /usr/sbin/nvpmodel -m 2 # Mode 15W
+echo -e "\033[32m Running inference on GPU with Mode 15W :  \033[0m"
+out_15w_gpu=$(python3 Scripts/inference_mean_conso.py  \
+    --engine_path=$ENGINE_PATH_GPU \
+    --audio_path=$AUDIO_PATH \
+    --engine=GPU \
+    --nb_rep=$NB_REP \
+    --classes_name=$CLASSES\
+    --power_mode=15W)
+
+result_15_gpu=$(echo "$out_15w_gpu" | grep "*")   
+printf $result_15_gpu    
+
+printf "\n"
+echo -e "\033[32m Running inference on GPU with Mode 30W :  \033[0m"
+sudo /usr/sbin/nvpmodel -m 3 # Mode 30W ALL
+out_30w_gpu=$(python3 Scripts/inference_mean_conso.py  \
+    --engine_path=$ENGINE_PATH_GPU \
+    --audio_path=$AUDIO_PATH \
+    --engine=GPU \
+    --nb_rep=$NB_REP \
+    --classes_name=$CLASSES\
+    --power_mode=30W)
+    
+result_30w_gpu=$(echo "$out_30w_gpu" | grep "*")   
+printf $result_30w_gpu
+
+# Print the stats
+
+
+printf "\n"
+stat_maxn_gpu=$(echo "$out_maxn_gpu" | grep "|")
+stat_30w_gpu=$(echo "$out_30w_gpu" | grep "|")
+stat_15w_gpu=$(echo "$out_15w_gpu" | grep "|")
+
+rows="%-1s %-10s| %-10s| %-10s| %-10s| %-10s | %-10s |\n"
+printf "| %-10s| %-10s| %-10s| %-10s| %-10s | %-10s |\n" Mode Engine 'Delay (s)' 'GPU (mW)' 'CV (mW)' 'TOT (mW)'
+printf "+-----------+-----------+-----------+-----------+------------+------------+ \n"
+printf "$rows" $stat_maxn_gpu
+printf "$rows" $stat_30w_gpu
+printf "$rows" $stat_15w_gpu
+
