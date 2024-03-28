@@ -66,4 +66,5 @@ Répéter cette opération pour tous les fichiers nécessaires notamment les poi
 
 ##### Lancer le script python depuis Xilinx !
 
-→ Si jamais le script est un Jupyter Notebook, on peut directement y accéder en allant sur http://10.29.227.75 (adapter l’IP), le mot de passe est le même que la xilinx
+Le script est inference_pynq.py.
+→ Si jamais le script est un Jupyter Notebook, on peut directement y accéder en allant sur http://10.29.227.75 (adapter l’IP), le mot de passe est le même que la Xilinx
