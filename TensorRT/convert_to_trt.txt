@@ -1,2 +1,0 @@
-/usr/src/tensorrt/bin/trtexec --onnx=/home/brain/Documents/AudioNN_Portage/MobileNetTens/Neural_Weight/MobileNetTens_W_10.onnx --saveEngine=mobileNet_engine.trt
-
