@@ -1,0 +1,15 @@
+tensorrt==8.4.1.5
+onnx==1.14.1
+jtop==<jtop version>
+torch==1.13
+numpy==1.22.0
+torchlibrosa==0.1.0
+librosa==0.10.1
+matplotlib==3.1.2
+soundfile==0.12.1
+Jinja2==3.1.2
+pycuda==2023.1
+tensorrt==8.4.1.5
+threadpoolctl==3.2.0
+requests==2.22.0
+
