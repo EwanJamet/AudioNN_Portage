@@ -1,1 +1,0 @@
-/usr/src/tensorrt/bin/trtexec --onnx=Sources/MobileNetTens_W_10.onnx --useDLACore=0 --allowGPUFallback --saveEngine=/home/brain/Documents/Jetson/Resources/mobileNet_engine_DLA.trt

@@ -1,1 +1,0 @@
-/usr/src/tensorrt/bin/trtexec --onnx=Sources/MobileNetTens_W_10.onnx --saveEngine=/home/brain/Documents/Jetson/TensorRT/Sources/mobileNet_engine.trt
